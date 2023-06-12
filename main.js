@@ -76,13 +76,6 @@ function init() {
     orbitControls.minAzimuthAngle = 2 * Math.PI - horizRotateBound;
     orbitControls.enableZoom = false;
     orbitControls.update();
-    // orbitControls.maxDistance = camera.position.z + 2;
-    // orbitControls.minDistance = camera.position.z - 6;
-    // orbitControls.enableDamping = true;
-
-    // Shader Loading
-    // var vertexShader = document.getElementById( 'vertexShader' ).src.textContent;
-    // var fragmentShader = document.getElementById( 'fragmentShader' ).src.textContent;
 
     const shaderMat = new THREE.ShaderMaterial( {
 
@@ -119,10 +112,10 @@ function init() {
         let normalMapBaked = generateMap(scene);
         scene.remove(mesh);
 
-        const depthMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(fov_y * camera.aspect, fov_y),
-            new THREE.MeshBasicMaterial({ map: depthMap })
-        );
+        // const depthMesh = new THREE.Mesh(
+        //     new THREE.PlaneGeometry(fov_y * camera.aspect, fov_y),
+        //     new THREE.MeshBasicMaterial({ map: depthMap })
+        // );
         // depthMesh.position.set(1.5, 1, 5);
         // scene.add(depthMesh);
 
@@ -144,33 +137,14 @@ function init() {
             }
         };
         mesh.material = customMat;
-        // mesh.material = shaderMat;
-        // scene.background = new THREE.Color( 0xf0f0f0);
-        const cube_loader = new THREE.CubeTextureLoader();
-        // const bg = loader.load([
-        //     'tex/background/sides.png',
-        //     'tex/background/sides.png',
-        //     'tex/background/top.png',
-        //     'tex/background/bottom.png',
-        //     'tex/background/sides.png',
-        //     'tex/background/sides.png',
-        // ]);
+
         const bg = textureLoader.load('tex/background/sides.png');
         bg.colorSpace = THREE.LinearSRGBColorSpace;
         bg.offset.set(0.001, 0.001);
         scene.background = bg;
 
-
         scene.add( mesh );
-        // mesh.scale.set( 0.5, 0.5, 0.5 );
-        // mesh.position.set(0, 0.5, 0);
-        // let depthMap = generateMap(scene);
-        // const depthMesh = new THREE.Mesh(
-        //     new THREE.PlaneGeometry(5, 5),
-        //     new THREE.MeshBasicMaterial({ map: depthMap })
-        // );
-        // depthMesh.position.set(0, 0, 5);
-        // scene.add(depthMesh);
+
         screenshot = true;
     }, undefined, function ( error ) {
 
@@ -201,10 +175,10 @@ function init() {
         let normalMapBaked = generateMap(scene);
         scene.remove(mesh);
 
-        const depthMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(fov_y * camera.aspect, fov_y),
-            new THREE.MeshBasicMaterial({ map: depthMap })
-        );
+        // const depthMesh = new THREE.Mesh(
+        //     new THREE.PlaneGeometry(fov_y * camera.aspect, fov_y),
+        //     new THREE.MeshBasicMaterial({ map: depthMap })
+        // );
         // depthMesh.position.set(1.5, 1, 5);
         // scene.add(depthMesh);
 
@@ -239,15 +213,6 @@ function init() {
         bg.colorSpace = THREE.LinearSRGBColorSpace;
         bg.offset.set(0.001, 0.001);
         scene.background = bg;
-        // mesh.scale.set( 0.5, 0.5, 0.5 );
-        // mesh.position.set(0, 0.5, 0);
-        // let depthMap = generateMap(scene);
-        // const depthMesh = new THREE.Mesh(
-        //     new THREE.PlaneGeometry(5, 5),
-        //     new THREE.MeshBasicMaterial({ map: depthMap })
-        // );
-        // depthMesh.position.set(0, 0, 5);
-        // scene.add(depthMesh);
     }, undefined, function ( error ) {
 
         console.error( error );
@@ -311,10 +276,6 @@ function init() {
 
     composer.addPass( renderModel );
     composer.addPass( effectNoise);
-    // composer.addPass( effectBloom );
-    // composer.addPass( effectFilm );
-
-    //
 
     onWindowResize();
 
@@ -331,8 +292,6 @@ function onWindowResize() {
     composer.setSize( window.innerWidth, window.innerHeight );
 
 }
-
-//
 
 function animate() {
     const speed = 0.0005;
@@ -402,9 +361,7 @@ function loadShader(path) {
 function generateMap(scene) {
     let fov_y = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
     const renderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
-    // const dmat = new THREE.MeshNormalMaterial();
 
-    // scene.overrideMaterial = dmat;
     renderer.setRenderTarget(renderTarget);
     renderer.render(scene, camera);
     renderer.setRenderTarget(null);
