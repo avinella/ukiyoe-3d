@@ -29,9 +29,9 @@ function init() {
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color( 0xf0f0f0);
-    const topLight = new THREE.DirectionalLight( 0xffffff, 1 );
-    const ambientLight = new THREE.AmbientLight( 0xffffff, 0.25 );
-    topLight.position.set( 0, 2, 1 );
+    const topLight = new THREE.DirectionalLight( 0xffffff, 0.6 );
+    const ambientLight = new THREE.AmbientLight( 0xfaefeb, 0.15 );
+    topLight.position.set( 1.6, 1.0, 3 );
     scene.add( topLight );
     scene.add(ambientLight);
 
@@ -115,6 +115,7 @@ function init() {
                 shader.fragmentShader = shader.fragmentShader.replace('#include <output_fragment>', figureShader);
             }
         };
+        mesh.receiveShadow = true;
         mesh.material = customMat;
 
         // Set background
@@ -228,10 +229,11 @@ function init() {
             new THREE.MeshStandardMaterial( {
                 color: 0xf7f2e4,
                 emissive: 0xf7f2e4,
-                emissiveIntensity: 0.8
+                emissiveIntensity: 0.7
             })
         );
         light.position.set(-2.00, 1.1, -0.7);
+        light.add(new THREE.PointLight(0xffffff, 0.1));
 
         fireflies[0].add(mesh);
         fireflies[0].add(light);
@@ -243,7 +245,8 @@ function init() {
         fireflies[1].rotation.set(0.0, 0.0, -1.2);
         fireflies[1].position.set(-2.5, 0.9, -0.7);
         fireflies[2].rotation.set(0.0, 0.0, 1.7);
-        fireflies[2].position.set(1.1, 4.2, -0.7);
+        fireflies[2].scale.set(0.5, 0.5, 0.5);
+        fireflies[2].position.set(0.7, 2.9, 2.5);
 
         for (let i = 0; i < 3; i++) {
             scene.add(fireflies[i]);
@@ -296,9 +299,9 @@ function animate() {
     if (time - lastAni > 10) {
         lastAni = time;
     }
-    fireflies[0].position.clamp(new THREE.Vector3(0.4, 2.2, -0.7), new THREE.Vector3(0.6, 2.4, -0.7));
-    fireflies[1].position.clamp(new THREE.Vector3(-2.6, 0.8, -0.7), new THREE.Vector3(-2.4, 1.0, -0.7));
-    fireflies[2].position.clamp(new THREE.Vector3(1.0, 4.1, -0.7), new THREE.Vector3(1.2, 4.3, -0.7));
+    fireflies[0].position.clamp(new THREE.Vector3(0.4, 2.2, -0.8), new THREE.Vector3(0.6, 2.4, -0.6));
+    fireflies[1].position.clamp(new THREE.Vector3(-2.6, 0.8, -0.8), new THREE.Vector3(-2.4, 1.0, -0.6));
+    fireflies[2].position.clamp(new THREE.Vector3(0.6, 2.8, 2.4), new THREE.Vector3(0.8, 3.0, 2.6));
 
     requestAnimationFrame( animate );
 
