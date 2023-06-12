@@ -5,7 +5,7 @@ import { RenderPass } from 'https://unpkg.com/three@0.153.0/examples/jsm/postpro
 import { GLTFLoader } from 'https://unpkg.com/three@0.153.0/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.153.0/examples/jsm/controls/OrbitControls.js';
 import { ShaderPass } from 'https://unpkg.com/three@0.153.0/examples/jsm/postprocessing/ShaderPass.js';
-import { NoiseShader } from './shaders/noise.js';
+import { NoiseShader } from 'shaders/noise.js';
 
 let camera, renderer, composer, clock, orbitControls;
 
