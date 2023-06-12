@@ -64,7 +64,7 @@ function init() {
     figureBaseMap.flipY = false;
     figureBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
 
-    loader.load( 'figure_highpoly_frontal_gl_v2.gltf', function ( gltf ) {
+    loader.load( 'https://media.githubusercontent.com/media/avinella/ukiyoe-3d/main/dist/figure_highpoly_frontal_gl_v2.gltf?raw=true', function ( gltf ) {
 
         mesh = gltf.scene.children[ 0 ];
         mesh.material = new THREE.MeshDepthMaterial();
@@ -127,7 +127,7 @@ function init() {
     ghostBaseMap.flipY = false;
     ghostBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
 
-    loader.load( 'ghost_highpoly_frontal_gl.gltf', function ( gltf ) {
+    loader.load( 'https://media.githubusercontent.com/media/avinella/ukiyoe-3d/main/dist/ghost_highpoly_frontal_gl.gltf?raw=true', function ( gltf ) {
 
         mesh = gltf.scene.children[ 0 ];
         mesh.material = new THREE.MeshDepthMaterial();
@@ -195,7 +195,7 @@ function init() {
             new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize(), 
             new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize()];
 
-    loader.load( 'firefly.gltf', function ( gltf ) {
+    loader.load( 'https://media.githubusercontent.com/media/avinella/ukiyoe-3d/main/dist/firefly.gltf?raw=true', function ( gltf ) {
 
         mesh = gltf.scene.children[ 0 ];
         mesh.material = new THREE.MeshStandardMaterial( {
