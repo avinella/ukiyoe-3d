@@ -75,4 +75,4 @@ if (edge > threshold) {
 float fade = tex_c.y + 0.4;
 vec3 adjust = vec3(1.05, 1.03, 1.0);
 
-gl_FragColor = vec4( outgoingLight * adjust , shadow_out * fade );
+gl_FragColor = vec4( outgoingLight , shadow_out * fade );
