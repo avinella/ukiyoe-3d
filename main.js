@@ -11,7 +11,7 @@ import { NoiseShader } from '/shaders/noise.js';
 
 let camera, renderer, composer, clock, orbitControls;
 
-let uniforms, mesh;
+let mesh;
 let vertexShader, fragmentShader;
 let time, lastAni;
 let fireflies, directions;
@@ -43,22 +43,6 @@ function init() {
 
     const textureLoader = new THREE.TextureLoader();
 
-    uniforms = {
-
-        'fogDensity': { value: 0.45 },
-        'fogColor': { value: new THREE.Vector3( 0, 0, 0 ) },
-        'time': { value: 1.0 },
-        'uvScale': { value: new THREE.Vector2( 3.0, 1.0 ) },
-        'texture1': { value: textureLoader.load( 'tex/cloud.png' ) },
-        'texture2': { value: textureLoader.load( 'tex/lavatile.jpg' ) }
-
-    };
-
-    uniforms[ 'texture1' ].value.wrapS = uniforms[ 'texture1' ].value.wrapT = THREE.RepeatWrapping;
-    uniforms[ 'texture2' ].value.wrapS = uniforms[ 'texture2' ].value.wrapT = THREE.RepeatWrapping;
-
-    const size = 0.65;
-
     // Rendering
     renderer = new THREE.WebGLRenderer( { antialias: true, preserveDrawingBuffer: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
@@ -77,19 +61,9 @@ function init() {
     orbitControls.enableZoom = false;
     orbitControls.update();
 
-    const shaderMat = new THREE.ShaderMaterial( {
-
-        uniforms: uniforms,
-        vertexShader: vertexShader,
-        fragmentShader: fragmentShader
-
-    } );
-
     // Model Loading
     const loader = new GLTFLoader();
-    const normalMap = textureLoader.load('/tex/ghost/ghost_lowpoly_gl_DefaultMaterial_Normal.png');
-    normalMap.flipY = false;
-    const figureBaseMap = textureLoader.load('/tex/figure/figure_baseColor.png');
+    const figureBaseMap = textureLoader.load('figure_baseColor.png');
     figureBaseMap.flipY = false;
     figureBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
 
@@ -138,7 +112,7 @@ function init() {
         };
         mesh.material = customMat;
 
-        const bg = textureLoader.load('tex/background/sides.png');
+        const bg = textureLoader.load('sides.png');
         bg.colorSpace = THREE.LinearSRGBColorSpace;
         bg.offset.set(0.001, 0.001);
         scene.background = bg;
@@ -152,7 +126,7 @@ function init() {
 
     } );
 
-    const ghostBaseMap = textureLoader.load('/tex/ghost/ghost_baseColor.png');
+    const ghostBaseMap = textureLoader.load('ghost_baseColor.png');
     ghostBaseMap.flipY = false;
     ghostBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
 
@@ -209,7 +183,7 @@ function init() {
         mesh.material = customMat;
 
         scene.add( mesh );
-        const bg = textureLoader.load('tex/background/sides.png');
+        const bg = textureLoader.load('sides.png');
         bg.colorSpace = THREE.LinearSRGBColorSpace;
         bg.offset.set(0.001, 0.001);
         scene.background = bg;
