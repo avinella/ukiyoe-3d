@@ -64,7 +64,7 @@ function init() {
     figureBaseMap.flipY = false;
     figureBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
 
-    loader.load( 'https://media.githubusercontent.com/media/avinella/ukiyoe-3d/main/modles/figure_highpoly_frontal_gl_v2.gltf?raw=true', function ( gltf ) {
+    loader.load( 'https://media.githubusercontent.com/media/avinella/ukiyoe-3d/main/models/figure_highpoly_frontal_gl_v2.gltf?raw=true', function ( gltf ) {
 
         mesh = gltf.scene.children[ 0 ];
         mesh.material = new THREE.MeshDepthMaterial();
