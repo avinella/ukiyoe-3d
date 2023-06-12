@@ -5,7 +5,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-import { NoiseShader } from './noise.js';
+import { NoiseShader } from './shaders/noise.js';
 
 let camera, renderer, composer, clock, orbitControls;
 
