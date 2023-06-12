@@ -23,20 +23,20 @@ function init() {
 
     camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 3000 );
     camera.position.z = 10;
-    screenshot = false;
+    screenshot = false;     // if an image should be captured once everything is rendered
     
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color( 0xf0f0f0);
-    const topLight = new THREE.DirectionalLight( 0xffffff, 1 );
-    const ambientLight = new THREE.AmbientLight( 0xffffff, 0.25 );
-    topLight.position.set( 0, 2, 1 );
+    const topLight = new THREE.DirectionalLight( 0xffffff, 0.6 );
+    const ambientLight = new THREE.AmbientLight( 0xfaefeb, 0.15 );
+    topLight.position.set( 1.6, 1.0, 3 );
     scene.add( topLight );
     scene.add(ambientLight);
 
     clock = new THREE.Clock();
     time = 1.0;
-    lastAni = time;
+    lastAni = time;     // control when fireflies change direction
 
     const textureLoader = new THREE.TextureLoader();
 
@@ -60,6 +60,8 @@ function init() {
 
     // Model Loading
     const loader = new GLTFLoader();
+
+    // MAIN FIGURE
     const figureBaseMap = textureLoader.load('figure_baseColor.png');
     figureBaseMap.flipY = false;
     figureBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
@@ -72,24 +74,28 @@ function init() {
         mesh.scale.set( 0.45, 0.45, 0.45 );
         mesh.position.set(0, 0.6, 2);
         scene.background = new THREE.Color( 0x000000);
+
+        // Depth pass
         let depthMap = generateMap(scene);
         scene.remove(mesh);
 
         let fov_y = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
-        console.log(fov_y * camera.aspect, fov_y);
 
+        // Normal build
         mesh.material = new THREE.MeshNormalMaterial();
         scene.add( mesh );
         let normalMapBaked = generateMap(scene);
         scene.remove(mesh);
 
+        // For debugging
         // const depthMesh = new THREE.Mesh(
         //     new THREE.PlaneGeometry(fov_y * camera.aspect, fov_y),
         //     new THREE.MeshBasicMaterial({ map: depthMap })
         // );
-        // depthMesh.position.set(1.5, 1, 5);
+        // depthMesh.position.set(0, 0, 0);
         // scene.add(depthMesh);
 
+        //Configure custom shader
         const figureShader = loadShader('figureShader');
         var customMat = new THREE.MeshStandardMaterial( {
             map: figureBaseMap,
@@ -107,8 +113,10 @@ function init() {
                 shader.fragmentShader = shader.fragmentShader.replace('#include <output_fragment>', figureShader);
             }
         };
+        mesh.receiveShadow = true;
         mesh.material = customMat;
 
+        // Set background
         const bg = textureLoader.load('sides.png');
         bg.colorSpace = THREE.LinearSRGBColorSpace;
         bg.offset.set(0.001, 0.001);
@@ -123,6 +131,7 @@ function init() {
 
     } );
 
+    // GHOST
     const ghostBaseMap = textureLoader.load('ghost_baseColor.png');
     ghostBaseMap.flipY = false;
     ghostBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
@@ -135,22 +144,25 @@ function init() {
         mesh.scale.set( 0.45, 0.5, 0.5 );
         mesh.position.set(-0.5, 1.0, -1);
         scene.background = new THREE.Color( 0x000000);
+
+        // Depth pass
         let depthMap = generateMap(scene);
         scene.remove(mesh);
 
         let fov_y = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
-        console.log(fov_y * camera.aspect, fov_y);
 
+        // Normal pass
         mesh.material = new THREE.MeshNormalMaterial();
         scene.add( mesh );
         let normalMapBaked = generateMap(scene);
         scene.remove(mesh);
 
+        // For debugging
         // const depthMesh = new THREE.Mesh(
         //     new THREE.PlaneGeometry(fov_y * camera.aspect, fov_y),
         //     new THREE.MeshBasicMaterial({ map: depthMap })
         // );
-        // depthMesh.position.set(1.5, 1, 5);
+        // depthMesh.position.set(0, 0, 0);
         // scene.add(depthMesh);
 
         const ghostShader = loadShader('ghostShader');
@@ -178,8 +190,9 @@ function init() {
         };
         mesh.receiveShadow = true;
         mesh.material = customMat;
-
         scene.add( mesh );
+
+        // Set background
         const bg = textureLoader.load('sides.png');
         bg.colorSpace = THREE.LinearSRGBColorSpace;
         bg.offset.set(0.001, 0.001);
@@ -190,6 +203,7 @@ function init() {
 
     } );
 
+    // FIREFLIES
     fireflies = [new THREE.Group(), new THREE.Group(), new THREE.Group()];
     directions = [new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize(), 
             new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize(), 
@@ -211,10 +225,11 @@ function init() {
             new THREE.MeshStandardMaterial( {
                 color: 0xf7f2e4,
                 emissive: 0xf7f2e4,
-                emissiveIntensity: 0.8
+                emissiveIntensity: 0.7
             })
         );
         light.position.set(-2.00, 1.1, -0.7);
+        light.add(new THREE.PointLight(0xffffff, 0.1));
 
         fireflies[0].add(mesh);
         fireflies[0].add(light);
@@ -226,7 +241,8 @@ function init() {
         fireflies[1].rotation.set(0.0, 0.0, -1.2);
         fireflies[1].position.set(-2.5, 0.9, -0.7);
         fireflies[2].rotation.set(0.0, 0.0, 1.7);
-        fireflies[2].position.set(1.1, 4.2, -0.7);
+        fireflies[2].scale.set(0.5, 0.5, 0.5);
+        fireflies[2].position.set(0.7, 2.9, 2.5);
 
         for (let i = 0; i < 3; i++) {
             scene.add(fireflies[i]);
@@ -238,6 +254,7 @@ function init() {
 
     } );
 
+    // Final rendering passes
     const renderModel = new RenderPass( scene, camera );
     const effectNoise = new ShaderPass(NoiseShader);
 
@@ -263,6 +280,7 @@ function onWindowResize() {
 }
 
 function animate() {
+    // Firefly movement
     const speed = 0.0005;
     for (let i = 0; i < 3; i++) {
         if (time - lastAni > 10) {
@@ -277,9 +295,9 @@ function animate() {
     if (time - lastAni > 10) {
         lastAni = time;
     }
-    fireflies[0].position.clamp(new THREE.Vector3(0.4, 2.2, -0.7), new THREE.Vector3(0.6, 2.4, -0.7));
-    fireflies[1].position.clamp(new THREE.Vector3(-2.6, 0.8, -0.7), new THREE.Vector3(-2.4, 1.0, -0.7));
-    fireflies[2].position.clamp(new THREE.Vector3(1.0, 4.1, -0.7), new THREE.Vector3(1.2, 4.3, -0.7));
+    fireflies[0].position.clamp(new THREE.Vector3(0.4, 2.2, -0.8), new THREE.Vector3(0.6, 2.4, -0.6));
+    fireflies[1].position.clamp(new THREE.Vector3(-2.6, 0.8, -0.8), new THREE.Vector3(-2.4, 1.0, -0.6));
+    fireflies[2].position.clamp(new THREE.Vector3(0.6, 2.8, 2.4), new THREE.Vector3(0.8, 3.0, 2.6));
 
     requestAnimationFrame( animate );
 
@@ -327,6 +345,8 @@ function loadShader(path) {
     return shader;
 }
 
+
+// Renders current state of scene to a texture
 function generateMap(scene) {
     let fov_y = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
     const renderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);

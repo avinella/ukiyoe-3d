@@ -60,4 +60,4 @@ if (edge > threshold) {
 // outgoingLight = vec3(g);
 
 vec3 adjust = vec3(1.05, 1.03, 1.0);
-gl_FragColor = vec4( outgoingLight * adjust, diffuseColor.a );
+gl_FragColor = vec4( outgoingLight , diffuseColor.a );
