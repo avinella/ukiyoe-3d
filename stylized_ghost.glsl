@@ -20,7 +20,7 @@ if (dot(lighting.xyz * vec3(0.3, 0.59, 0.11), vec3(1.0)) < shadow_thresh) {
 
 // LINE PARAMETERS
 float a = 0.9;
-float thinness = 0.4;
+float thinness = 0.7;
 float threshold = 0.4;
 float opacity = 0.8;
 float ampl = 2.0;
