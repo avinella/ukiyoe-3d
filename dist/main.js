@@ -195,7 +195,7 @@ function init() {
             new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize(), 
             new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize()];
 
-    loader.load( 'https://media.githubusercontent.com/media/avinella/ukiyoe-3d/main/models/firefly.gltf?raw=true', function ( gltf ) {
+    loader.load( 'https://media.githubusercontent.com/media/avinella/ukiyoe-3d/main/models/firefly.gltf', function ( gltf ) {
 
         mesh = gltf.scene.children[ 0 ];
         mesh.material = new THREE.MeshStandardMaterial( {
