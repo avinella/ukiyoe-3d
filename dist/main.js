@@ -87,13 +87,13 @@ function init() {
 
     // Model Loading
     const loader = new GLTFLoader();
-    const normalMap = textureLoader.load('/tex/ghost/ghost_lowpoly_gl_DefaultMaterial_Normal.png');
-    normalMap.flipY = false;
-    const figureBaseMap = textureLoader.load('/tex/figure/figure_baseColor.png');
+    // const normalMap = textureLoader.load('./ghost_lowpoly_gl_DefaultMaterial_Normal.png');
+    // normalMap.flipY = false;
+    const figureBaseMap = textureLoader.load('./figure_baseColor.png');
     figureBaseMap.flipY = false;
     figureBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
 
-    loader.load( 'models/figure_highpoly_frontal_gl_v2.gltf', function ( gltf ) {
+    loader.load( './models/figure_highpoly_frontal_gl_v2.gltf', function ( gltf ) {
 
         mesh = gltf.scene.children[ 0 ];
         mesh.material = new THREE.MeshDepthMaterial();
@@ -138,7 +138,7 @@ function init() {
         };
         mesh.material = customMat;
 
-        const bg = textureLoader.load('tex/background/sides.png');
+        const bg = textureLoader.load('./sides.png');
         bg.colorSpace = THREE.LinearSRGBColorSpace;
         bg.offset.set(0.001, 0.001);
         scene.background = bg;
@@ -152,7 +152,7 @@ function init() {
 
     } );
 
-    const ghostBaseMap = textureLoader.load('/tex/ghost/ghost_baseColor.png');
+    const ghostBaseMap = textureLoader.load('./ghost_baseColor.png');
     ghostBaseMap.flipY = false;
     ghostBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
 
@@ -209,7 +209,7 @@ function init() {
         mesh.material = customMat;
 
         scene.add( mesh );
-        const bg = textureLoader.load('tex/background/sides.png');
+        const bg = textureLoader.load('./sides.png');
         bg.colorSpace = THREE.LinearSRGBColorSpace;
         bg.offset.set(0.001, 0.001);
         scene.background = bg;
