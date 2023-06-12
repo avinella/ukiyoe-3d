@@ -1,1 +1,2 @@
+figure_highpoly_frontal_gl_v2.gltf filter=lfs diff=lfs merge=lfs -text
 *.gltf filter=lfs diff=lfs merge=lfs -text
