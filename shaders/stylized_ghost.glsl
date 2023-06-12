@@ -6,7 +6,7 @@ diffuseColor.a = 1.0;
 diffuseColor.a *= material.transmissionAlpha;
 #endif
 
-// Cel Shading
+// Cel Shading -- also changes alpha
 vec3 lighting = outgoingLight / texture2D(map, vMapUv).xyz;
 float shadow_thresh = 0.3;
 float shadow_out = 1.0;
@@ -24,8 +24,6 @@ float thinness = 0.4;
 float threshold = 0.4;
 float opacity = 0.8;
 float ampl = 2.0;
-// thinness += ampl * sin(time);
-
 
 // Edge detection
 int strength = 15;
