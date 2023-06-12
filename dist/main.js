@@ -1,13 +1,11 @@
-import * as THREE from 'three';
+import * as THREE from 'https://unpkg.com/three@0.153.0/build/three.module.js';
 
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
-import { BloomPass } from 'three/addons/postprocessing/BloomPass.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-import { NoiseShader } from '/shaders/noise.js';
+import { EffectComposer } from 'https://unpkg.com/three@0.153.0/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'https://unpkg.com/three@0.153.0/examples/jsm/postprocessing/RenderPass.js';
+import { GLTFLoader } from 'https://unpkg.com/three@0.153.0/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.153.0/examples/jsm/controls/OrbitControls.js';
+import { ShaderPass } from 'https://unpkg.com/three@0.153.0/examples/jsm/postprocessing/ShaderPass.js';
+import { NoiseShader } from './shaders/noise.js';
 
 let camera, renderer, composer, clock, orbitControls;
 
