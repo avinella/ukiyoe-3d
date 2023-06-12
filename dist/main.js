@@ -64,7 +64,7 @@ function init() {
     figureBaseMap.flipY = false;
     figureBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
 
-    loader.load( 'models/figure_highpoly_frontal_gl_v2.gltf', function ( gltf ) {
+    loader.load( 'figure_highpoly_frontal_gl_v2.gltf', function ( gltf ) {
 
         mesh = gltf.scene.children[ 0 ];
         mesh.material = new THREE.MeshDepthMaterial();
@@ -127,7 +127,7 @@ function init() {
     ghostBaseMap.flipY = false;
     ghostBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
 
-    loader.load( 'models/ghost_highpoly_frontal_gl.gltf', function ( gltf ) {
+    loader.load( 'ghost_highpoly_frontal_gl.gltf', function ( gltf ) {
 
         mesh = gltf.scene.children[ 0 ];
         mesh.material = new THREE.MeshDepthMaterial();
@@ -195,7 +195,7 @@ function init() {
             new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize(), 
             new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize()];
 
-    loader.load( 'models/firefly.gltf', function ( gltf ) {
+    loader.load( 'firefly.gltf', function ( gltf ) {
 
         mesh = gltf.scene.children[ 0 ];
         mesh.material = new THREE.MeshStandardMaterial( {
