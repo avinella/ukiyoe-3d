@@ -6,11 +6,16 @@ import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
 import { BloomPass } from 'three/addons/postprocessing/BloomPass.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { NoiseShader } from '/shaders/noise.js';
 
 let camera, renderer, composer, clock, orbitControls;
 
 let uniforms, mesh;
 let vertexShader, fragmentShader;
+let time, lastAni;
+let fireflies, directions;
+let screenshot;
 
 init();
 animate();
@@ -21,16 +26,20 @@ function init() {
 
     camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 3000 );
     camera.position.z = 10;
+    screenshot = false;
+    
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color( 0xf0f0f0);
     const topLight = new THREE.DirectionalLight( 0xffffff, 1 );
-    const ambientLight = new THREE.AmbientLight( 0xffffff, 0.05 );
+    const ambientLight = new THREE.AmbientLight( 0xffffff, 0.25 );
     topLight.position.set( 0, 2, 1 );
     scene.add( topLight );
     scene.add(ambientLight);
 
     clock = new THREE.Clock();
+    time = 1.0;
+    lastAni = time;
 
     const textureLoader = new THREE.TextureLoader();
 
@@ -51,16 +60,29 @@ function init() {
     const size = 0.65;
 
     // Rendering
-    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer = new THREE.WebGLRenderer( { antialias: true, preserveDrawingBuffer: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     container.appendChild( renderer.domElement );
     renderer.autoClear = false;
 
+    // Camera controls
+    const vertRotateBound = (Math.PI / 2) * 0.99 ;
+    const horizRotateBound = 0;
+
+    orbitControls = new OrbitControls( camera, renderer.domElement );
+    orbitControls.maxPolarAngle = vertRotateBound;
+    orbitControls.minPolarAngle = vertRotateBound;
+    orbitControls.maxAzimuthAngle = horizRotateBound;
+    orbitControls.minAzimuthAngle = 2 * Math.PI - horizRotateBound;
+    orbitControls.enableZoom = false;
+    orbitControls.update();
+    // orbitControls.maxDistance = camera.position.z + 2;
+    // orbitControls.minDistance = camera.position.z - 6;
+    // orbitControls.enableDamping = true;
+
     // Shader Loading
     // var vertexShader = document.getElementById( 'vertexShader' ).src.textContent;
     // var fragmentShader = document.getElementById( 'fragmentShader' ).src.textContent;
-
-    var frag = loadShader('fragmentChunk');
 
     const shaderMat = new THREE.ShaderMaterial( {
 
@@ -74,17 +96,19 @@ function init() {
     const loader = new GLTFLoader();
     const normalMap = textureLoader.load('/tex/ghost/ghost_lowpoly_gl_DefaultMaterial_Normal.png');
     normalMap.flipY = false;
-    const baseMap = textureLoader.load('/tex/ghost/base.png');
+    const figureBaseMap = textureLoader.load('/tex/figure/figure_baseColor.png');
+    figureBaseMap.flipY = false;
+    figureBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
 
-    loader.load( 'models/ghost_highpoly_frontal_gl.gltf', function ( gltf ) {
+    loader.load( 'models/figure_highpoly_frontal_gl_v2.gltf', function ( gltf ) {
 
         mesh = gltf.scene.children[ 0 ];
         mesh.material = new THREE.MeshDepthMaterial();
         scene.add( mesh );
-        mesh.scale.set( 0.5, 0.5, 0.5 );
-        mesh.position.set(0, 0.9, 0);
+        mesh.scale.set( 0.45, 0.45, 0.45 );
+        mesh.position.set(0, 0.6, 2);
         scene.background = new THREE.Color( 0x000000);
-        let depthMap = getDepthMap(scene);
+        let depthMap = generateMap(scene);
         scene.remove(mesh);
 
         let fov_y = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
@@ -92,20 +116,20 @@ function init() {
 
         mesh.material = new THREE.MeshNormalMaterial();
         scene.add( mesh );
-        let normalMapBaked = getDepthMap(scene);
+        let normalMapBaked = generateMap(scene);
         scene.remove(mesh);
 
         const depthMesh = new THREE.Mesh(
             new THREE.PlaneGeometry(fov_y * camera.aspect, fov_y),
-            new THREE.MeshBasicMaterial({ map: normalMapBaked })
+            new THREE.MeshBasicMaterial({ map: depthMap })
         );
         // depthMesh.position.set(1.5, 1, 5);
         // scene.add(depthMesh);
 
+        const figureShader = loadShader('figureShader');
         var customMat = new THREE.MeshStandardMaterial( {
-            map: baseMap,
-            roughness: 1.0,
-            transparent: true
+            map: figureBaseMap,
+            roughness: 0.5
         } );
         mesh.onBeforeRender = function () {
             customMat.userData.depthBaked = {value: depthMap};
@@ -116,7 +140,7 @@ function init() {
                 shader.uniforms.normalBaked = customMat.userData.normalBaked;
                 shader.uniforms.windowDims = customMat.userData.windowDims;
                 shader.fragmentShader = 'uniform sampler2D depthBaked;\nuniform sampler2D normalBaked;\nuniform vec2 windowDims;\n' + shader.fragmentShader;
-                shader.fragmentShader = shader.fragmentShader.replace('#include <output_fragment>', frag);
+                shader.fragmentShader = shader.fragmentShader.replace('#include <output_fragment>', figureShader);
             }
         };
         mesh.material = customMat;
@@ -132,6 +156,7 @@ function init() {
         //     'tex/background/sides.png',
         // ]);
         const bg = textureLoader.load('tex/background/sides.png');
+        bg.colorSpace = THREE.LinearSRGBColorSpace;
         bg.offset.set(0.001, 0.001);
         scene.background = bg;
 
@@ -139,7 +164,84 @@ function init() {
         scene.add( mesh );
         // mesh.scale.set( 0.5, 0.5, 0.5 );
         // mesh.position.set(0, 0.5, 0);
-        // let depthMap = getDepthMap(scene);
+        // let depthMap = generateMap(scene);
+        // const depthMesh = new THREE.Mesh(
+        //     new THREE.PlaneGeometry(5, 5),
+        //     new THREE.MeshBasicMaterial({ map: depthMap })
+        // );
+        // depthMesh.position.set(0, 0, 5);
+        // scene.add(depthMesh);
+        screenshot = true;
+    }, undefined, function ( error ) {
+
+        console.error( error );
+
+    } );
+
+    const ghostBaseMap = textureLoader.load('/tex/ghost/ghost_baseColor.png');
+    ghostBaseMap.flipY = false;
+    ghostBaseMap.colorSpace = THREE.LinearSRGBColorSpace;
+
+    loader.load( 'models/ghost_highpoly_frontal_gl.gltf', function ( gltf ) {
+
+        mesh = gltf.scene.children[ 0 ];
+        mesh.material = new THREE.MeshDepthMaterial();
+        scene.add( mesh );
+        mesh.scale.set( 0.45, 0.5, 0.5 );
+        mesh.position.set(-0.5, 1.0, -1);
+        scene.background = new THREE.Color( 0x000000);
+        let depthMap = generateMap(scene);
+        scene.remove(mesh);
+
+        let fov_y = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
+        console.log(fov_y * camera.aspect, fov_y);
+
+        mesh.material = new THREE.MeshNormalMaterial();
+        scene.add( mesh );
+        let normalMapBaked = generateMap(scene);
+        scene.remove(mesh);
+
+        const depthMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(fov_y * camera.aspect, fov_y),
+            new THREE.MeshBasicMaterial({ map: depthMap })
+        );
+        // depthMesh.position.set(1.5, 1, 5);
+        // scene.add(depthMesh);
+
+        const ghostShader = loadShader('ghostShader');
+        var customMat = new THREE.MeshStandardMaterial( {
+            map: ghostBaseMap,
+            roughness: 0.4,
+            transparent: true,
+            emissive: 0xd1e9f0,
+            emissiveIntensity: 0.1,
+            forceSinglePass: true
+        } );
+        mesh.onBeforeRender = function () {
+            customMat.userData.time = {value: time};
+            customMat.userData.depthBaked = {value: depthMap};
+            customMat.userData.normalBaked = {value: normalMapBaked};
+            customMat.userData.windowDims = {value: new THREE.Vector2(fov_y * camera.aspect, fov_y)};
+            customMat.onBeforeCompile = shader => {
+                shader.uniforms.time = customMat.userData.time;
+                shader.uniforms.depthBaked = customMat.userData.depthBaked;
+                shader.uniforms.normalBaked = customMat.userData.normalBaked;
+                shader.uniforms.windowDims = customMat.userData.windowDims;
+                shader.fragmentShader = 'uniform sampler2D depthBaked;\nuniform sampler2D normalBaked;\nuniform vec2 windowDims;\nuniform float time;\n' + shader.fragmentShader;
+                shader.fragmentShader = shader.fragmentShader.replace('#include <output_fragment>', ghostShader);
+            }
+        };
+        mesh.receiveShadow = true;
+        mesh.material = customMat;
+
+        scene.add( mesh );
+        const bg = textureLoader.load('tex/background/sides.png');
+        bg.colorSpace = THREE.LinearSRGBColorSpace;
+        bg.offset.set(0.001, 0.001);
+        scene.background = bg;
+        // mesh.scale.set( 0.5, 0.5, 0.5 );
+        // mesh.position.set(0, 0.5, 0);
+        // let depthMap = generateMap(scene);
         // const depthMesh = new THREE.Mesh(
         //     new THREE.PlaneGeometry(5, 5),
         //     new THREE.MeshBasicMaterial({ map: depthMap })
@@ -152,33 +254,63 @@ function init() {
 
     } );
 
-    // mesh = new THREE.Mesh( new THREE.TorusGeometry( size, 0.3, 30, 30 ), material );
-    // mesh.rotation.x = 0.3;
-    // scene.add( mesh );
+    fireflies = [new THREE.Group(), new THREE.Group(), new THREE.Group()];
+    directions = [new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize(), 
+            new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize(), 
+            new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize()];
 
-    // Camera controls
-    // const vertRotateBound = Math.PI * (7/12);
-    // const horizRotateBound = Math.PI * (1/12);
+    loader.load( 'models/firefly.gltf', function ( gltf ) {
 
-    // orbitControls = new OrbitControls( camera, renderer.domElement );
-    // orbitControls.maxPolarAngle = vertRotateBound;
-    // orbitControls.minPolarAngle = Math.PI - vertRotateBound;
-    // orbitControls.maxAzimuthAngle = horizRotateBound;
-    // orbitControls.minAzimuthAngle = 2 * Math.PI - horizRotateBound;
-    // orbitControls.maxDistance = camera.position.z + 2;
-    // orbitControls.minDistance = camera.position.z - 6;
-    // orbitControls.enableDamping = true;
+        mesh = gltf.scene.children[ 0 ];
+        mesh.material = new THREE.MeshStandardMaterial( {
+            color: 0x5e5b53
+        });
+        mesh.scale.set( 0.5, 0.5, 0.5 );
+        mesh.rotation.x += 0.9;
+        mesh.rotation.y += 0.4;
+        mesh.position.set(-1.83, 1.1, -1);
 
+        const light = new THREE.Mesh(
+            new THREE.SphereGeometry(0.15),
+            new THREE.MeshStandardMaterial( {
+                color: 0xf7f2e4,
+                emissive: 0xf7f2e4,
+                emissiveIntensity: 0.8
+            })
+        );
+        light.position.set(-2.00, 1.1, -0.7);
 
-    //
+        fireflies[0].add(mesh);
+        fireflies[0].add(light);
+        fireflies[0].scale.set(0.7, 0.7, 0.7);
+        fireflies[1] = fireflies[0].clone();
+        fireflies[2] = fireflies[0].clone();
+
+        fireflies[0].position.set(0.5, 2.3, -0.7);
+        fireflies[1].rotation.set(0.0, 0.0, -1.2);
+        fireflies[1].position.set(-2.5, 0.9, -0.7);
+        fireflies[2].rotation.set(0.0, 0.0, 1.7);
+        fireflies[2].position.set(1.1, 4.2, -0.7);
+
+        for (let i = 0; i < 3; i++) {
+            scene.add(fireflies[i]);
+        }
+
+    }, undefined, function ( error ) {
+
+        console.error( error );
+
+    } );
 
     const renderModel = new RenderPass( scene, camera );
     const effectBloom = new BloomPass( 1.25 );
     const effectFilm = new FilmPass( 0.35, 0.95, 2048, false );
+    const effectNoise = new ShaderPass(NoiseShader);
 
     composer = new EffectComposer( renderer );
 
     composer.addPass( renderModel );
+    composer.addPass( effectNoise);
     // composer.addPass( effectBloom );
     // composer.addPass( effectFilm );
 
@@ -203,6 +335,23 @@ function onWindowResize() {
 //
 
 function animate() {
+    const speed = 0.0005;
+    for (let i = 0; i < 3; i++) {
+        if (time - lastAni > 10) {
+            let direction = new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, 0).normalize();
+            directions[i] = direction;
+        }
+        let shift = new THREE.Vector3(); 
+        shift.copy(directions[i]).multiplyScalar(speed);
+        
+        fireflies[i].position.add(shift);
+    }
+    if (time - lastAni > 10) {
+        lastAni = time;
+    }
+    fireflies[0].position.clamp(new THREE.Vector3(0.4, 2.2, -0.7), new THREE.Vector3(0.6, 2.4, -0.7));
+    fireflies[1].position.clamp(new THREE.Vector3(-2.6, 0.8, -0.7), new THREE.Vector3(-2.4, 1.0, -0.7));
+    fireflies[2].position.clamp(new THREE.Vector3(1.0, 4.1, -0.7), new THREE.Vector3(1.2, 4.3, -0.7));
 
     requestAnimationFrame( animate );
 
@@ -213,14 +362,27 @@ function animate() {
 function render() {
 
     const delta = 5 * clock.getDelta();
-    uniforms[ 'time' ].value += 0.2 * delta;
-
-    // mesh.rotation.y += 0.0125 * delta;
-    // mesh.rotation.x += 0.05 * delta;
+    time += 2.0 * delta;
+    composer.passes[1].uniforms["seed"].value = time;
 
     renderer.clear();
     composer.render( 0.01 );
-    // orbitControls.update();
+    
+    // if (screenshot) {
+    //     var imgData, imgNode;
+    //     try {
+    //         imgData = renderer.domElement.toDataURL();      
+    //         // console.log(imgData);
+    //     } 
+    //     catch(e) {
+    //         console.log("Browser does not support taking screenshot of 3d context");
+    //         return;
+    //     }
+    //     imgNode = document.createElement("img");
+    //     imgNode.src = imgData;
+    //     document.body.appendChild(imgNode);
+    //     screenshot = false;
+    // }
 
 }
 
@@ -237,7 +399,7 @@ function loadShader(path) {
     return shader;
 }
 
-function getDepthMap(scene) {
+function generateMap(scene) {
     let fov_y = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
     const renderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
     // const dmat = new THREE.MeshNormalMaterial();
