@@ -20,6 +20,8 @@ const NoiseShader = {
 
 		}`,
 
+    // Referenced https://simonharris.co/making-a-noise-film-grain-post-processing-effect-from-scratch-in-threejs/
+
 	fragmentShader: /* glsl */`
 
 		uniform float seed;

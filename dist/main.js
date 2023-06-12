@@ -10,7 +10,6 @@ import { NoiseShader } from './shaders/noise.js';
 let camera, renderer, composer, clock, orbitControls;
 
 let mesh;
-let vertexShader, fragmentShader;
 let time, lastAni;
 let fireflies, directions;
 let screenshot;
